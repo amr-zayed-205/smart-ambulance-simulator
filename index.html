@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>محاكي توجيه سيارات الإسعاف الذكي | Smart Ambulance Pathfinding</title>
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       HEADER
+  ════════════════════════════════════════════ -->
+  <header id="app-header">
+    <div class="header-inner">
+      <div class="header-logo" aria-hidden="true">🚑</div>
+      <div class="header-titles">
+        <h1>محاكي توجيه سيارات الإسعاف الذكي</h1>
+        <p class="header-sub">مقارنة حية بين خوارزميتي Dijkstra و A* في الزحام المروري</p>
+      </div>
+      <div class="header-badges">
+        <span class="algo-badge badge-dijkstra">Dijkstra</span>
+        <span class="algo-badge badge-astar">A* Search</span>
+        <button id="btn-arch" class="btn-arch" aria-haspopup="dialog" title="شرح الهيكل البرمجي والخوارزميات">
+          📐 شرح الهيكل البرمجي (Architecture)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       CONTROL PANEL — 3 Structured Steps
+  ════════════════════════════════════════════ -->
+  <section id="control-panel" role="toolbar" aria-label="أدوات التحكم في المحاكاة">
+    <div class="ctrl-steps-container">
+
+      <!-- Step 1: Map Preset & Paint Tools -->
+      <div class="ctrl-step-card step-setup">
+        <div class="step-badge">
+          <span class="step-num">1</span>
+          <span class="step-title">اختر الخريطة والأداة</span>
+        </div>
+        <div class="step-content">
+          <!-- Preset Selector -->
+          <div class="ctrl-field">
+            <label class="ctrl-label" for="select-preset">نمط الخريطة</label>
+            <select id="select-preset" class="ctrl-select">
+              <option value="Empty">🗺️ خريطة فارغة</option>
+              <option value="RushHour">🚦 زحام ساعة الذروة</option>
+              <option value="Maze">🧩 متاهة المدينة</option>
+              <option value="Random">🎲 عوائق عشوائية</option>
+            </select>
+          </div>
+
+          <!-- Paint Tools -->
+          <div class="ctrl-field">
+            <label class="ctrl-label">أداة الرسم والتعديل</label>
+            <div class="tool-group" id="tool-selector" role="radiogroup" aria-label="أدوات الرسم">
+
+              <label class="tool-btn active" data-tool="wall" title="جدار / حادث [1]">
+                <input type="radio" name="tool" value="wall" checked aria-label="جدار / حادث" />
+                <span class="tool-swatch swatch-wall"></span>
+                <span class="tool-name">جدار / حادث</span>
+              </label>
+
+              <label class="tool-btn" data-tool="traffic" title="زحام مروري (تكلفة 5) [2]">
+                <input type="radio" name="tool" value="traffic" aria-label="زحام مروري" />
+                <span class="tool-swatch swatch-traffic"></span>
+                <span class="tool-name">زحام مروري (تكلفة 5)</span>
+              </label>
+
+              <label class="tool-btn" data-tool="road" title="مسح الطريق [3]">
+                <input type="radio" name="tool" value="road" aria-label="مسح الطريق" />
+                <span class="tool-swatch swatch-road"></span>
+                <span class="tool-name">مسح الطريق</span>
+              </label>
+
+              <label class="tool-btn" data-tool="start" title="تحريك الإسعاف [4]">
+                <input type="radio" name="tool" value="start" aria-label="تحريك الإسعاف" />
+                <span class="tool-swatch swatch-start"></span>
+                <span class="tool-name">تحريك الإسعاف</span>
+              </label>
+
+              <label class="tool-btn" data-tool="end" title="تحريك المستشفى [5]">
+                <input type="radio" name="tool" value="end" aria-label="تحريك المستشفى" />
+                <span class="tool-swatch swatch-end"></span>
+                <span class="tool-name">تحريك المستشفى</span>
+              </label>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: View Mode & Animation Speed -->
+      <div class="ctrl-step-card step-config">
+        <div class="step-badge">
+          <span class="step-num">2</span>
+          <span class="step-title">وضع العرض والسرعة</span>
+        </div>
+        <div class="step-content">
+          <div class="ctrl-field">
+            <label class="ctrl-label" for="select-mode">طريقة العرض</label>
+            <select id="select-mode" class="ctrl-select">
+              <option value="compare">⚖️ مقارنة الخوارزميتين معاً</option>
+              <option value="astar">🟢 خوارزمية A* فقط</option>
+              <option value="dijkstra">🟡 خوارزمية Dijkstra فقط</option>
+            </select>
+          </div>
+
+          <div class="ctrl-field">
+            <label class="ctrl-label" for="select-speed">سرعة الحركة</label>
+            <select id="select-speed" class="ctrl-select">
+              <option value="fast">⚡ سريع</option>
+              <option value="medium">🕐 متوسط</option>
+              <option value="instant">💨 فوري (بدون انتظار)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Simulation Execution & Controls -->
+      <div class="ctrl-step-card step-actions">
+        <div class="step-badge">
+          <span class="step-num">3</span>
+          <span class="step-title">التحكم والتشغيل</span>
+          <span id="live-indicator" class="hidden" aria-live="polite" aria-label="إعادة توجيه حية">
+            ⚡ إعادة توجيه فورية
+          </span>
+        </div>
+        <div class="step-content step-buttons">
+          <button id="btn-run" class="btn btn-run btn-primary-action" title="تشغيل المحاكاة (R)">
+            <span class="btn-icon">▶</span> تشغيل المحاكاة
+          </button>
+          <button id="btn-clear" class="btn btn-clear" title="مسح المسار فقط (Escape)">
+            <span class="btn-icon">✕</span> مسح المسار
+          </button>
+          <button id="btn-reset" class="btn btn-reset" title="إعادة ضبط الخريطة بالكامل">
+            <span class="btn-icon">↺</span> إعادة ضبط الخريطة
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       ROUTE BLOCKED BANNER  (shown when no path)
+  ════════════════════════════════════════════ -->
+  <div id="route-blocked-banner" class="hidden" role="alert" aria-live="assertive">
+    <span class="blocked-icon" aria-hidden="true">🚨</span>
+    <span class="blocked-msg">
+      <strong>الطريق مغلق بالكامل:</strong> لا يوجد مسار متاح للمستشفى من موقع سيارة الإسعاف الحالي!
+    </span>
+    <button class="blocked-dismiss" id="btn-dismiss-blocked" aria-label="إغلاق التنبيه">✕</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       LEGEND
+  ════════════════════════════════════════════ -->
+  <div id="legend" aria-label="دليل رموز الخريطة">
+    <span class="legend-item">
+      <span class="legend-swatch swatch-road"></span>طريق عادي (تكلفة 1)
+    </span>
+    <span class="legend-item">
+      <span class="legend-swatch swatch-traffic"></span>زحام مروري (تكلفة 5)
+    </span>
+    <span class="legend-item">
+      <span class="legend-swatch swatch-wall"></span>جدار / حاجز
+    </span>
+    <span class="legend-item">
+      <span class="legend-swatch swatch-start"></span>🚑 سيارة الإسعاف
+    </span>
+    <span class="legend-item">
+      <span class="legend-swatch swatch-end"></span>🏥 المستشفى
+    </span>
+    <span class="legend-sep"></span>
+    <span class="legend-item">
+      <span class="legend-swatch swatch-visited-d"></span>فحص Dijkstra
+    </span>
+    <span class="legend-item">
+      <span class="legend-swatch swatch-path-d"></span>مسار Dijkstra الأقصر
+    </span>
+    <span class="legend-item">
+      <span class="legend-swatch swatch-visited-a"></span>فحص A*
+    </span>
+    <span class="legend-item">
+      <span class="legend-swatch swatch-path-a"></span>مسار A* الأقصر
+    </span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       STAGE — Two synchronized grids
+  ════════════════════════════════════════════ -->
+  <main id="stage">
+
+    <!-- ── Dijkstra Panel ─────────────────── -->
+    <article class="grid-panel" id="panel-dijkstra">
+
+      <header class="panel-header">
+        <span class="panel-badge badge-dijkstra">D</span>
+        <span class="panel-title">خوارزمية Dijkstra</span>
+        <span class="panel-status" id="status-dijkstra">جاهز</span>
+      </header>
+
+      <div class="grid-wrapper">
+        <div class="grid-container"
+             id="grid-dijkstra"
+             role="grid"
+             aria-label="شبكة محاكاة خوارزمية Dijkstra"
+             aria-rowcount="20"
+             aria-colcount="20">
+        </div>
+      </div>
+
+      <footer class="metrics-card" id="metrics-dijkstra">
+        <div class="metric">
+          <span class="metric-value" id="dijk-explored">—</span>
+          <span class="metric-label">المربعات المفحوصة</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value" id="dijk-cost">—</span>
+          <span class="metric-label">التكلفة الإجمالية</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value" id="dijk-steps">—</span>
+          <span class="metric-label">عدد الخطوات</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value" id="dijk-time">—</span>
+          <span class="metric-label">وقت التنفيذ (مللي ثانية)</span>
+        </div>
+      </footer>
+
+    </article><!-- /panel-dijkstra -->
+
+    <!-- ── A* Panel ───────────────────────── -->
+    <article class="grid-panel" id="panel-astar">
+
+      <header class="panel-header">
+        <span class="panel-badge badge-astar">A*</span>
+        <span class="panel-title">خوارزمية A* Search</span>
+        <span class="panel-status" id="status-astar">جاهز</span>
+      </header>
+
+      <div class="grid-wrapper">
+        <div class="grid-container"
+             id="grid-astar"
+             role="grid"
+             aria-label="شبكة محاكاة خوارزمية A*"
+             aria-rowcount="20"
+             aria-colcount="20">
+        </div>
+      </div>
+
+      <footer class="metrics-card" id="metrics-astar">
+        <div class="metric">
+          <span class="metric-value" id="astar-explored">—</span>
+          <span class="metric-label">المربعات المفحوصة</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value" id="astar-cost">—</span>
+          <span class="metric-label">التكلفة الإجمالية</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value" id="astar-steps">—</span>
+          <span class="metric-label">عدد الخطوات</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value" id="astar-time">—</span>
+          <span class="metric-label">وقت التنفيذ (مللي ثانية)</span>
+        </div>
+      </footer>
+
+    </article><!-- /panel-astar -->
+
+  </main><!-- /stage -->
+
+  <!-- ═══════════════════════════════════════════
+       COMPARISON VERDICT BAR (shown after run)
+  ════════════════════════════════════════════ -->
+  <div id="verdict-bar" class="hidden" aria-live="polite">
+    <span id="verdict-text"></span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       KEYBOARD SHORTCUTS HINT
+  ════════════════════════════════════════════ -->
+  <div id="keyboard-hint" aria-label="اختصارات لوحة المفاتيح">
+    <span>⌨ <kbd>R</kbd> تشغيل المحاكاة &nbsp;|&nbsp; <kbd>Esc</kbd> مسح المسار &nbsp;|&nbsp;
+          <kbd>1</kbd>–<kbd>5</kbd> اختيار الأدوات &nbsp;|&nbsp;
+          <kbd>سحب بالماوس</kbd> للرسم والتعديل</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       ARCHITECTURE & ALGORITHMS MODAL
+  ════════════════════════════════════════════ -->
+  <div id="arch-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">🏛️</span>
+          <h2 id="modal-title">معمارية النظام ومقارنة الخوارزميات (System Architecture)</h2>
+        </div>
+        <button id="modal-close" class="modal-close-btn" aria-label="إغلاق النافذة">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <section class="modal-section">
+          <h3>⚡ مقارنة الخوارزميات: Dijkstra مقابل A* Search</h3>
+          <div class="comparison-grid">
+            <div class="algo-card dijkstra-card">
+              <h4>خوارزمية Dijkstra</h4>
+              <ul>
+                <li><strong>دالة التوجيه (Heuristic):</strong> غير موجهة ($h(n) = 0$). تفحص الخريطة بشكل دائري شعاعي في جميع الاتجاهات دون معرفة مسبقة باتجاه الهدف.</li>
+                <li><strong>معيار الترتيب:</strong> تعتمد حصرياً على التكلفة الحقيقية التراكمية $g(n)$ من نقطة البداية.</li>
+                <li><strong>السلوك والنتائج:</strong> تضمن العثور على المسار الأقصر والأمثل، ولكن على حساب فحص عدد كبير جداً من المربعات غير المجدية.</li>
+                <li><strong>الاستخدام الأنسب:</strong> عند غياب معلومات عن موقع الهدف أو عند الحاجة لإيجاد أقصر مسار لجميع نقاط الخريطة في آنٍ واحد.</li>
+              </ul>
+            </div>
+            <div class="algo-card astar-card">
+              <h4>خوارزمية A* Search (بمسافة مانهاتن)</h4>
+              <ul>
+                <li><strong>دالة التوجيه (Heuristic):</strong> مسافة مانهاتن $h(n) = |r_1 - r_2| + |c_1 - c_2|$ (دالة مقبولة ومتسقة لا تفرط في التقدير أبداً).</li>
+                <li><strong>معيار الترتيب:</strong> التكلفة الإجمالية التقديرية $f(n) = g(n) + h(n)$.</li>
+                <li><strong>السلوك والنتائج:</strong> تُركّز طاقة البحث باتجاه المستشفى مباشرة، مما يقلل عدد المربعات المفحوصة بنسبة تصل إلى 60% مع ضمان نفس التكلفة المثالية.</li>
+                <li><strong>الاستخدام الأنسب:</strong> توجيه سيارات الإسعاف وحالات الطوارئ من نقطة محددة إلى نقطة وصول حيث يكون عامل الوقت حاسماً.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="modal-section">
+          <h3>📐 تطبيق أنماط التصميم البرمجية (Design Patterns)</h3>
+          <div class="patterns-grid">
+            <div class="pattern-item">
+              <span class="pattern-badge badge-mvc">MVC</span>
+              <div>
+                <strong>نمط النموذج-العرض-المتحكم (Model-View-Controller)</strong>
+                <p>فصل هيكلي صارم للمسؤوليات: ملف <code>model.js</code> يحفظ حالة الشبكة ومواقع الإسعاف والمستشفى ونتائج الخوارزميات دون أي تعامل مع الـ DOM، وملف <code>view.js</code> مخصص للرسم والتحريك فقط، وملف <code>controller.js</code> يستقبل أحداث المستخدم ويرسل الأوامر للنموذج.</p>
+              </div>
+            </div>
+            <div class="pattern-item">
+              <span class="pattern-badge badge-obs">Observer</span>
+              <div>
+                <strong>نمط المراقب (Observer Pattern - Subject &amp; Listener)</strong>
+                <p>يعمل <code>SimulatorModel</code> كـ Subject يبث أحداثاً محددة (مثل <code>grid:cellChanged</code> و <code>pathfinding:done</code>)، بينما يعمل <code>SimulatorView</code> كمستمع (Observer) يُحدّث واجهة المستخدم تلقائياً، وهو ما يتيح ميزة إعادة التوجيه الحية بمرونة فائقة.</p>
+              </div>
+            </div>
+            <div class="pattern-item">
+              <span class="pattern-badge badge-fact">Factory</span>
+              <div>
+                <strong>نمط المصنع (Factory Pattern - MapFactory)</strong>
+                <p>يحتوي <code>mapFactory.js</code> على فئة <code>MapFactory</code> لتوليد أنماط مختلفة من خرائط المدن (فارغة، زحام ساعة الذروة، متاهة، عشوائية) مع خوارزمية فحص تحقق الاتصال (BFS) لضمان وجود مسار صالح للعبور دائماً.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="modal-section">
+          <h3>🔄 إعادة التوجيه الفوري والتفاعلي (Live Reactive Rerouting)</h3>
+          <p class="modal-text">
+            بمجرد اكتمال أول محاكاة، يدخل النظام في وضع «إعادة التوجيه الفوري». يمكنك رسم حواجز جديدة أو إضافة زحام مروري أو سحب سيارة الإسعاف والمستشفى، وستلاحظ كيف يتكيف مسار الإسعاف في التو واللحظة دون الحاجة للضغط مجدداً على زر التشغيل.
+          </p>
+        </section>
+      </div>
+
+      <div class="modal-footer">
+        <span class="modal-footer-tip">إرشاد: يمكنك الضغط على مفتاح <kbd>Esc</kbd> أو النقر خارج الصندوق لإغلاق هذه النافذة</span>
+        <button id="modal-ok-btn" class="btn btn-run">فهمت ذلك ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container (injected by view) -->
+  <div id="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- Entry point — ES6 module -->
+  <script type="module" src="src/controller/controller.js"></script>
+
+</body>
+</html>
